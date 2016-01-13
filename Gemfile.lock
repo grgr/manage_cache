@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     manage_cache (0.0.1)
-      rails (~> 4.2.5)
+      rails
 
 GEM
   remote: https://rubygems.org/
