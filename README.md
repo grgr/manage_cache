@@ -26,7 +26,7 @@ So the values in the instance_eval hash will be instance_evaled. All other keys 
 
 In the view you can than:
 
-```ruby
+```erb
 <% cache @some_class.cache_key_for(:some_key), skip_digest: true do %>
   Some Content to be cached.
 <% end %>
@@ -57,7 +57,7 @@ end
 
 The above cache_key could be used somewhere where the user`s shoes are shown e.g. :show or :index e.g.:
 
-```ruby
+```erb
 <% cache user.shoes.last.try.cache_key_for(:users_shoes), skip_digest: true do %>
      ....
 <% end %>
