@@ -1,0 +1,3 @@
+<% cache @user.cache_key_for(:show), skip_digest: true do %>
+  <%= @user.name %>
+<% end %>
