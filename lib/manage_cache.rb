@@ -13,7 +13,7 @@ module ManageCache
       cattr_accessor :cache_keys_specs
       self.cache_keys_specs = keys_specs
 
-      after_save     { |record| record.dump_cache! }
+      before_save    { |record| record.dump_cache! }
       before_destroy { |record| record.dump_cache! }
 
       include ManageCache::LocalInstanceMethods
@@ -23,8 +23,6 @@ module ManageCache
   module LocalInstanceMethods
     def dump_cache!
       self.class.cache_keys_specs.each do |k,v|
-        instance_variable_set("@cache_key_for_#{k}", nil)
-
         # the rails helper method 'cache (name, opts) do ...'
         # adds some extras to the cache key.
         # To run with this gem, you have to add 'skip_digest: true'.
@@ -33,6 +31,8 @@ module ManageCache
         [cache_key_for(k), "views/#{cache_key_for(k)}"].each do |key|
           Rails.cache.delete(key)
         end
+
+        instance_variable_set("@cache_key_for_#{k}", nil)
       end
     end
 

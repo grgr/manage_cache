@@ -6,12 +6,14 @@ This is especially usefull for all cache stores other than memcached, but can he
 
 Another advantage is that it is not necessary to touch relations. Just define the cache_key right.
 
+NOTE: Version 0.0.1 did not clean up cache correctly. Use version 0.0.2.
+
 # Usage
 
 Add the gem to your Gemfile:
 
 ```ruby
-gem 'manage_cache', git: 'git://github.com/grgr/manage_cache.git'
+gem 'manage_cache', '~> 0.0.2'
 ```
 
 In your ActiveRecord model, write e.g.:

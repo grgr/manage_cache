@@ -12,22 +12,28 @@ class UsersControllerTest < ActionController::TestCase
     @nike = Shoe.create(name: 'Nike', color: 'blue', user_id: @hans.id)
     @saucony = Shoe.create(name: 'Saucony', color: 'yellow', user_id: @hans.id)
 
-    Rails.cache.clear
+    #Rails.cache.clear
   end
 
   def teardown
-    Rails.cache.clear
+    #Rails.cache.clear
   end
 
   test "users#show cache should be updated after user update" do
     get :show, {id: @hans.id}
-    assert_match(/Hans/, Rails.cache.read("views/#{@hans.cache_key_for(:show)}"))
+    old_cache_key = @hans.cache_key_for(:show)
+    assert_match(/Hans/, Rails.cache.read("views/#{old_cache_key}"))
 
+    sleep 1
     @hans.update(name: 'Peter')
-    assert_nil(Rails.cache.read("views/#{@hans.cache_key_for(:show)}"))
+    assert_nil(Rails.cache.read("views/#{old_cache_key}"))
+    assert_nil(@hans.instance_variable_get("@cache_key_for_show"))
+    new_cache_key = @hans.cache_key_for(:show)
+    assert_not_equal(new_cache_key, old_cache_key)
+    assert_not_nil(@hans.instance_variable_get("@cache_key_for_show"))
 
     get :show, {id: @hans.id}
-    assert_match(/Peter/, Rails.cache.read("views/#{@hans.cache_key_for(:show)}"))
+    assert_match(/Peter/, Rails.cache.read("views/#{new_cache_key}"))
   end  
 
 
