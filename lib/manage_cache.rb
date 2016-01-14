@@ -73,7 +73,7 @@ module ManageCache
       # and this cache_key could be used somewhere where the user`s shoes are shown e.g. :show or :index
       #
       #  e.g. 
-      #  <% cache user.shoes.last.try.cache_key_for(:users_shoes), skip_digest: true do %>
+      #  <% cache user.shoes.last.try(:cache_key_for, :users_shoes), skip_digest: true do %>
       #    ....
       #
       # it is enough to take one of the users` shoes for the cache_key here
