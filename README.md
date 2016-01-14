@@ -60,7 +60,7 @@ end
 The above cache_key could be used somewhere where the user`s shoes are shown e.g. :show or :index e.g.:
 
 ```erb
-<% cache user.shoes.last.try.cache_key_for(:users_shoes), skip_digest: true do %>
+<% cache user.shoes.last.try(:cache_key_for, :users_shoes), skip_digest: true do %>
      ....
 <% end %>
 ```
