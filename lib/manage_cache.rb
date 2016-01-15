@@ -22,36 +22,58 @@ module ManageCache
 
   module LocalInstanceMethods
     def dump_cache!
-      self.class.cache_keys_specs.each do |k,v|
+      self.class.cache_keys_specs.each do |key_name, key_specs|
         # the rails helper method 'cache (name, opts) do ...'
         # adds some extras to the cache key.
         # To run with this gem, you have to add 'skip_digest: true'.
         # Any other options will prevent correct cache deletion!!
         #
-        [cache_key_for(k), "views/#{cache_key_for(k)}"].each do |key|
-          Rails.cache.delete(key)
+        [cache_key_for(key_name), "views/#{cache_key_for(key_name)}"].each do |key|
+          #
+          # Opts added to cache_key_for will be suffixed to the rest of 
+          # the cache_key.
+          # For these opts to take effect on cache management (e.g. deletion)
+          # use `regexp: { opts_key: "matcher_string" , .... } 
+          # e.g.:
+          #
+          # in the paginated index view:
+          #
+          #   <% cache @users.last.try(:cache_key_for, :users_index, page: params[:page]) do %>
+          #
+          # in the model:
+          #
+          #   class User < ActiveRecord::Base
+          #     manage_cache_for users_index: { 
+          #                        class_eval: { max_up: "maximum(:updated_at)"} 
+          #                        regexp:     { page: "\d+" }
+          #                      }
+          #
+          if key_specs[:regexp]
+            delete_cache_w_regexp(key, key_specs)
+          else
+            Rails.cache.delete(key)
+          end
+          instance_variable_set("@cache_key_for_#{key_name}", nil)
         end
-
-        instance_variable_set("@cache_key_for_#{k}", nil)
       end
     end
 
-    def cache_key_for(spec)
+    def cache_key_for(spec, opts={})
       instance_variable_get("@cache_key_for_#{spec}") ||
-        instance_variable_set("@cache_key_for_#{spec}", prepare_cache_key(spec))
+        instance_variable_set("@cache_key_for_#{spec}", prepare_cache_key(spec, opts={}))
     end
 
     private
      
-    def prepare_cache_key(spec)
+    def prepare_cache_key(spec, opts={})
       cache_key = {}
 
       key_specs = self.class.cache_keys_specs[spec]
-
+      
       # some extra specification like :show or :index_row
       # defaults to the spec-key
       #
-      cache_key[:spec] = key_specs[:spec] || spec
+      cache_key[:spec] = spec
 
       # named values from some method calls
       # the easiest case would be updated_at e.g.: 
@@ -82,11 +104,29 @@ module ManageCache
       #
       key_specs[:instance_eval].each do |name, cmd| 
         cache_key[name] = self.instance_eval(cmd.to_s)
-      end
+      end if key_specs[:instance_eval]
       
-      cache_key.inject([]){ |mem, (k,v)| mem << "#{k}-#{v}" }.join('/')
+      key_specs[:class_eval].each do |name, cmd| 
+        cache_key[name] = self.class.class_eval(cmd.to_s)
+      end if key_specs[:class_eval]
+
+
+      # merge static values from manage_cache_for sth: { static: 'static' }
+      #
+      # and opts from cache_key_for, like:
+      #   <% cache cache_key_for(:sth, page: params[:page]) %>
+      #
+      [key_specs[:static], opts].each do |hash|
+        cache_key.reverse_merge!(hash) if hash
+      end
+
+      cache_key.inject([]){ |mem, (k,v)| mem << "#{k}=#{v}" }.join('-')
     end
 
+    def delete_cache_w_regexp(key, specs)
+      regexp = specs[:regexp].inject([]){|m, (k,v)| m << "#{k}=#{v}" }.join('-')
+      Rails.cache.delete_matched(/^#{key}-#{regexp}$/)
+    end
   end
 end
 
