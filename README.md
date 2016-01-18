@@ -6,14 +6,14 @@ This is especially usefull for all cache stores other than memcached, but can he
 
 Another advantage is that it is not necessary to touch relations. Just define the cache_key right.
 
-NOTE: This Readme is updated for version 0.0.3.
+NOTE: Version 0.0.4 fixes regexp cache deletion with redis.
 
 # Usage
 
 Add the gem to your Gemfile:
 
 ```ruby
-gem 'manage_cache', '~> 0.0.3'
+gem 'manage_cache', '~> 0.0.4'
 ```
 
 In your ActiveRecord model, write e.g.:
