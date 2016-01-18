@@ -131,7 +131,7 @@ module ManageCache
     #
     def delete_cache_w_regexp(key, specs)
       regexp = specs[:regexp].inject([]){|m, (k,v)| m << "#{k}=#{v}" }.join('-')
-      Rails.cache.delete_matched(/^#{Regexp.escape(key)}-#{regexp}$/)
+      Rails.cache.delete_matched("#{Regexp.escape(key)}-#{regexp}")
     end
 
     # if some attributes are specified in :if_changed
