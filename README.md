@@ -102,6 +102,9 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
      ...
    <% end %>
    ```
-   + NOTE: use `try(:cache_key_for, :...)` on collections. They might be empty!
-   + NOTE: use `page: params[:page] || 1` because the first page is normally called without params[:page] - this content would    never be deleted!
+   
+   NOTES:
+   +  use `try(:cache_key_for, :...)` on collections. They might be empty!
+   + use `page: params[:page] || 1` because the first page is normally called without params[:page] - this content would    never be deleted!
+   + memcached does not implent `delete_matched` therefore regexp cannot be used with memcached. Use redis instead: [redis-rails](https://github.com/redis-store/redis-rails)
 
