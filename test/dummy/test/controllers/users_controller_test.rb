@@ -12,11 +12,11 @@ class UsersControllerTest < ActionController::TestCase
     @nike = Shoe.create(name: 'Nike', color: 'blue', user_id: @hans.id)
     @saucony = Shoe.create(name: 'Saucony', color: 'yellow', user_id: @hans.id)
 
-    #Rails.cache.clear
+    Rails.cache.clear
   end
 
   def teardown
-    #Rails.cache.clear
+    Rails.cache.clear
   end
 
   test "users#show cache should be updated after user update" do
@@ -24,16 +24,12 @@ class UsersControllerTest < ActionController::TestCase
     old_cache_key = @hans.cache_key_for(:show)
     assert_match(/Hans/, Rails.cache.read("views/#{old_cache_key}"))
 
-    sleep 1
     @hans.update(name: 'Peter')
     assert_nil(Rails.cache.read("views/#{old_cache_key}"))
     assert_nil(@hans.instance_variable_get("@cache_key_for_show"))
-    new_cache_key = @hans.cache_key_for(:show)
-    assert_not_equal(new_cache_key, old_cache_key)
-    assert_not_nil(@hans.instance_variable_get("@cache_key_for_show"))
 
     get :show, {id: @hans.id}
-    assert_match(/Peter/, Rails.cache.read("views/#{new_cache_key}"))
+    assert_match(/Peter/, Rails.cache.read("views/#{@hans.cache_key_for(:show)}"))
   end  
 
 
@@ -46,7 +42,6 @@ class UsersControllerTest < ActionController::TestCase
 
     get :index
     assert_match(/is Peter/, Rails.cache.read("views/#{@hans.cache_key_for(:row_name)}"))
-    get :index
   end  
 
 
@@ -59,5 +54,29 @@ class UsersControllerTest < ActionController::TestCase
 
     get :index
     assert_match(/Puma: violet/, Rails.cache.read("views/#{@hans.shoes.last.try(:cache_key_for, :users_shoes)}"))
+  end  
+
+
+
+  test "users#index users_index-cache should be updated after user update" do
+    get :index
+    assert_match(/Hans/, Rails.cache.read("views/#{@hans.cache_key_for(:users_index)}"))
+
+    @hans.update(name: 'Peter')
+    assert_nil(Rails.cache.read("views/#{@hans.cache_key_for(:users_index)}"))
+
+    get :index
+    assert_match(/is Peter/, Rails.cache.read("views/#{@hans.cache_key_for(:users_index)}"))
+  end  
+
+  test "users#index users_index-cache should be updated after shoe update" do
+    get :index
+    assert_match(/Puma: red/, Rails.cache.read("views/#{@hans.cache_key_for(:users_index)}"))
+
+    @puma.update(color: 'violet')
+    assert_nil(Rails.cache.read("views/#{@hans.shoes.last.try(:cache_key_for, :users_index)}"))
+
+    get :index
+    assert_match(/Puma: violet/, Rails.cache.read("views/#{@hans.shoes.last.try(:cache_key_for, :users_index)}"))
   end  
 end

@@ -1,38 +1,39 @@
 <p id="notice"><%= notice %></p>
 
-<h1>Listing Users</h1>
+<% cache @users.last.try(:cache_key_for, :users_index), skip_digest: true do %>
+  <h1>Listing Users</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Shoes</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% @users.each do |user| %>
+  <table>
+    <thead>
       <tr>
-        <td>
-          <% cache user.cache_key_for(:row_name), skip_digest: true do %>
-            <%= user.nice_name %>
-          <% end %>
-        </td>
-        <td>
-          <% cache user.shoes.last.try(:cache_key_for, :users_shoes), skip_digest: true do %>
-            <%= user.shoes.map(&:name_with_color).join(',') %>
-            <%#= user.shoes.map{|shoe| "#{shoe.name}:#{shoe.color}"}.join(',') %>
-          <% end %>
-        </td>
-        <td><%= link_to 'Show', user %></td>
-        <td><%= link_to 'Edit', edit_user_path(user) %></td>
-        <td><%= link_to 'Destroy', user, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <th>Name</th>
+        <th>Shoes</th>
+        <th colspan="3"></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
 
-<br>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td>
+            <% cache user.cache_key_for(:row_name), skip_digest: true do %>
+              <%= user.nice_name %>
+            <% end %>
+          </td>
+          <td>
+            <% cache user.shoes.last.try(:cache_key_for, :users_shoes), skip_digest: true do %>
+              <%= user.shoes.map(&:name_with_color).join(',') %>
+            <% end %>
+          </td>
+          <td><%= link_to 'Show', user %></td>
+          <td><%= link_to 'Edit', edit_user_path(user) %></td>
+          <td><%= link_to 'Destroy', user, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
 
-<%= link_to 'New User', new_user_path %>
+  <br>
+
+  <%= link_to 'New User', new_user_path %>
+<% end %>

@@ -1,0 +1,31 @@
+<p id="notice"><%= notice %></p>
+
+<% cache @shoes.last.try(:cache_key_for, :shoes_index, page: params[:page] || 1), skip_digest: true do %>
+  <h1>Listing shoes</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Color</th>
+        <th colspan="3"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @shoes.each do |shoe| %>
+        <tr>
+          <td> <%= shoe.name %> </td>
+          <td> <%= shoe.color %> </td>
+          <td><%= link_to 'Show', shoe %></td>
+          <td><%= link_to 'Edit', edit_shoe_path(shoe) %></td>
+          <td><%= link_to 'Destroy', shoe, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <br>
+
+  <%= link_to 'New shoe', new_shoe_path %>
+<% end %>

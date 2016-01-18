@@ -48,7 +48,7 @@ module ManageCache
           #                        regexp:     { page: "\d+" }
           #                      }
           #
-          if key_specs[:regexp]
+          if !key_specs[:regexp].blank?
             delete_cache_w_regexp(key, key_specs)
           else
             Rails.cache.delete(key)
@@ -60,7 +60,7 @@ module ManageCache
 
     def cache_key_for(spec, opts={})
       instance_variable_get("@cache_key_for_#{spec}") ||
-        instance_variable_set("@cache_key_for_#{spec}", prepare_cache_key(spec, opts={}))
+        instance_variable_set("@cache_key_for_#{spec}", prepare_cache_key(spec, opts))
     end
 
     private
@@ -69,7 +69,11 @@ module ManageCache
       cache_key = {}
 
       key_specs = self.class.cache_keys_specs[spec]
-      
+
+      if key_specs.blank?
+        raise "The specification for cache_key '#{spec}' is missing in manage_cache in #{self.class.name}."
+      end
+
       # some extra specification like :show or :index_row
       # defaults to the spec-key
       #
@@ -125,7 +129,7 @@ module ManageCache
 
     def delete_cache_w_regexp(key, specs)
       regexp = specs[:regexp].inject([]){|m, (k,v)| m << "#{k}=#{v}" }.join('-')
-      Rails.cache.delete_matched(/^#{key}-#{regexp}$/)
+      Rails.cache.delete_matched(/^#{Regexp.escape(key)}-#{regexp}$/)
     end
   end
 end
