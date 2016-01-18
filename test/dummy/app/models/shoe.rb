@@ -5,7 +5,8 @@ class Shoe < ActiveRecord::Base
 
   manage_cache_for users_shoes: { instance_eval: { user: "user.id", last_updated_shoe: "user.shoes.maximum(:updated_at)" } },
     users_index: { instance_eval: { max_up: "user.class.maximum(:updated_at)"} },
-    shoes_index: { class_eval: { max_up: "maximum(:updated_at)" }, regexp: { page: "\\d*" } }
+    shoes_index: { class_eval: { max_up: "maximum(:updated_at)" }, regexp: { page: "\\d*" } },
+    shoe_color: { instance_eval: { shoe_id: :id}, if_changed: [:color] }
 
 
   def name_with_color

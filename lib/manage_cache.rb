@@ -29,32 +29,13 @@ module ManageCache
         # Any other options will prevent correct cache deletion!!
         #
         [cache_key_for(key_name), "views/#{cache_key_for(key_name)}"].each do |key|
-          #
-          # Opts added to cache_key_for will be suffixed to the rest of 
-          # the cache_key.
-          # For these opts to take effect on cache management (e.g. deletion)
-          # use `regexp: { opts_key: "matcher_string" , .... } 
-          # e.g.:
-          #
-          # in the paginated index view:
-          #
-          #   <% cache @users.last.try(:cache_key_for, :users_index, page: params[:page]) do %>
-          #
-          # in the model:
-          #
-          #   class User < ActiveRecord::Base
-          #     manage_cache_for users_index: { 
-          #                        class_eval: { max_up: "maximum(:updated_at)"} 
-          #                        regexp:     { page: "\d+" }
-          #                      }
-          #
           if !key_specs[:regexp].blank?
             delete_cache_w_regexp(key, key_specs)
           else
             Rails.cache.delete(key)
           end
           instance_variable_set("@cache_key_for_#{key_name}", nil)
-        end
+        end if delete_cache?(key_specs)
       end
     end
 
@@ -127,9 +108,41 @@ module ManageCache
       cache_key.inject([]){ |mem, (k,v)| mem << "#{k}=#{v}" }.join('-')
     end
 
+    #
+    # Opts added to cache_key_for will be suffixed to the rest of 
+    # the cache_key.
+    # For these opts to take effect on cache management (e.g. deletion)
+    # use `regexp: { opts_key: "matcher_string" , .... } 
+    # e.g.:
+    #
+    # in the paginated index view:
+    #
+    #   <% cache @users.last.try(:cache_key_for, :users_index, page: params[:page]) do %>
+    #
+    # in the model:
+    #
+    #   class User < ActiveRecord::Base
+    #     manage_cache_for users_index: { 
+    #                        class_eval: { max_up: "maximum(:updated_at)"} 
+    #                        regexp:     { page: "\\d+" }
+    #                      }
+    #
+    # be aware, that the matcher_string has to be escaped (e.g. "\\d+" instead of "\d+")!
+    #
     def delete_cache_w_regexp(key, specs)
       regexp = specs[:regexp].inject([]){|m, (k,v)| m << "#{k}=#{v}" }.join('-')
       Rails.cache.delete_matched(/^#{Regexp.escape(key)}-#{regexp}$/)
+    end
+
+    # if some attributes are specified in :if_changed
+    # check whether they changed
+    # and delete cache only if they changed
+    #
+    # if not specified delete cache
+    #
+    def delete_cache?(key_specs)
+      !key_specs[:if_changed] or 
+        self.changed.length > (self.changed - key_specs[:if_changed].map(&:to_s)).length 
     end
   end
 end
