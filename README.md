@@ -86,7 +86,7 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
    ```
    So, the cache for a users` shoes would be deleted if either the color of one of his shoes or his name changes.
 
-+ Regexp can be used for paginated content, e.g.:
++ Regexp can be used for e.g. paginated content:
 
    ```
    class User < ActiveRecord::Base
