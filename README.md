@@ -13,7 +13,7 @@ NOTE: This Readme is updated for version 0.0.3.
 Add the gem to your Gemfile:
 
 ```ruby
-gem 'manage_cache', '~> 0.0.2'
+gem 'manage_cache', '~> 0.0.3'
 ```
 
 In your ActiveRecord model, write e.g.:
