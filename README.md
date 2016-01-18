@@ -6,7 +6,7 @@ This is especially usefull for all cache stores other than memcached, but can he
 
 Another advantage is that it is not necessary to touch relations. Just define the cache_key right.
 
-NOTE: Version 0.0.1 did not clean up cache correctly. Use version 0.0.2.
+NOTE: This Readme is updated for version 0.0.3.
 
 # Usage
 
@@ -20,11 +20,15 @@ In your ActiveRecord model, write e.g.:
 
 ```ruby
 class SomeClass < ActiveRecord::Base
-  manage_cache_for some_key: { instance_eval: { some_class: :id, updated_at: :updated_at, another_key: :some_method } }
+  manage_cache_for some_key: { instance_eval: { some_class: :id, another_method_key: :another_method } }
 end
 ```
-So the values in the instance_eval hash will be instance_evaled. All other keys are free.
-
+Values used in the specified cache_key (here: some_key) are:
++ static: a hash with free static values to be included to the cache_key
++ instance_eval: a hash with keys being free and values being instance_evaled
++ class_eval: a hash with keys being free and values being class_evaled
++ regexp: a hash where keys should match keys of opts given to cache_key_for and values being the regexp-part to match against (see examples below).
++ if_changed: an Array specifying the attributes which have to be changed to delete this cache. Note: updated_at does not count here. Just don\`t specify :if_changed if you want the cache to be deleted on updated_at/ on every save. 
 
 In the view you can than:
 
@@ -44,7 +48,7 @@ The easiest case would be updated_at e.g.:
 ```ruby
 class User < ActiveRecord::Base
   has_many :shoes
-  manage_cache_for show: { instance_eval: { user: :id, updated_at: :updated_at }
+  manage_cache_for show: { instance_eval: { user: :id }
 end
 ```
 
