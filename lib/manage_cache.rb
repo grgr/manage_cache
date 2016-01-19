@@ -26,8 +26,8 @@ module ManageCache
         if delete_cache?(key_specs)
           if !key_specs[:regexp].blank?
             delete_cache_w_regexp(key_name)
-            #delete_cache_w_regexp(key, key_specs)
           else
+            delete_cache(key_name)
           end
           instance_variable_set("@cache_key_for_#{key_name}", nil)
         end 
@@ -128,7 +128,7 @@ module ManageCache
       specs = self.class.cache_keys_specs[key_name]
 
       regexp = specs[:regexp].inject([]) do |m, (k,v)| 
-        redis_store = Rails.cache.class == ActiveSupport::Cache::RedisStore
+        redis_store = Rails.cache.class.name == "ActiveSupport::Cache::RedisStore"
         m << "#{k}=#{redis_store ? '*' : v}" 
       end.join('-')
 
@@ -155,7 +155,7 @@ module ManageCache
     #
     def delete_cache?(key_specs)
       !key_specs[:if_changed] or 
-        self.changed.length > (self.changed - key_specs[:if_changed].map(&:to_s)).length 
+        self.changed != (self.changed - key_specs[:if_changed].map(&:to_s))
     end
   end
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    manage_cache (0.0.2)
+    manage_cache (0.0.5)
       rails
 
 GEM
@@ -94,7 +94,7 @@ GEM
       activesupport (= 4.2.5)
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
-    rake (10.4.2)
+    rake (10.5.0)
     slop (3.6.0)
     sprockets (3.5.2)
       concurrent-ruby (~> 1.0)
