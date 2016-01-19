@@ -23,19 +23,14 @@ module ManageCache
   module LocalInstanceMethods
     def dump_cache!
       self.class.cache_keys_specs.each do |key_name, key_specs|
-        # the rails helper method 'cache (name, opts) do ...'
-        # adds some extras to the cache key.
-        # To run with this gem, you have to add 'skip_digest: true'.
-        # Any other options will prevent correct cache deletion!!
-        #
-        [cache_key_for(key_name), "views/#{cache_key_for(key_name)}"].each do |key|
+        if delete_cache?(key_specs)
           if !key_specs[:regexp].blank?
-            delete_cache_w_regexp(key, key_specs)
+            delete_cache_w_regexp(key_name)
+            #delete_cache_w_regexp(key, key_specs)
           else
-            Rails.cache.delete(key)
           end
           instance_variable_set("@cache_key_for_#{key_name}", nil)
-        end if delete_cache?(key_specs)
+        end 
       end
     end
 
@@ -129,9 +124,27 @@ module ManageCache
     #
     # be aware, that the matcher_string has to be escaped (e.g. "\\d+" instead of "\d+")!
     #
-    def delete_cache_w_regexp(key, specs)
-      regexp = specs[:regexp].inject([]){|m, (k,v)| m << "#{k}=#{v}" }.join('-')
+    def delete_cache_w_regexp(key_name)
+      specs = self.class.cache_keys_specs[key_name]
+
+      regexp = specs[:regexp].inject([]) do |m, (k,v)| 
+        redis_store = Rails.cache.class == ActiveSupport::Cache::RedisStore
+        m << "#{k}=#{redis_store ? '*' : v}" 
+      end.join('-')
+
+      key = prepare_cache_key(key_name)
       Rails.cache.delete_matched("#{Regexp.escape(key)}-#{regexp}")
+    end
+
+    # the rails helper method 'cache (name, opts) do ...'
+    # adds some extras to the cache key.
+    # To run with this gem, you have to add 'skip_digest: true'.
+    # Any other options will prevent correct cache deletion!!
+    #
+    def delete_cache(key_name)
+      [cache_key_for(key_name), "views/#{cache_key_for(key_name)}"].each do |key|
+        Rails.cache.delete(key)
+      end
     end
 
     # if some attributes are specified in :if_changed
