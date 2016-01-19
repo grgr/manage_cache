@@ -49,7 +49,6 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
 
    ```ruby
    class User < ActiveRecord::Base
-     has_many :shoes
      manage_cache_for user_show: { instance_eval: { user: :id }
    end
    ```
