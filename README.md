@@ -104,7 +104,7 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
    ```
    
    NOTES:
-   +  use `try(:cache_key_for, :...)` on collections. They might be empty!
+   +  use `@collection.first.try(:cache_key_for, :...)` on collections. They might be empty!
    + use `page: params[:page] || 1` because the first page is normally called without params[:page] - this content would    never be deleted!
    + memcached does not implent `delete_matched` therefore regexp cannot be used with memcached. 
    + If cache_store is redis_store patterns like `\d+` will be replaced with `*`. Note as well that Redis has performance problems regexp-ing keys [redis-store/issues/186](https://github.com/redis-store/redis-store/issues/186).
