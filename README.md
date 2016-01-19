@@ -84,8 +84,31 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
    <% end %>
    ```
    So, the cache for a users` shoes would be deleted if either the color of one of his shoes or his name changes.
+   
++ A slightly different case which can be handled with regexp on one side/model happens when you want to cache each shoe seperately with it\`s user\`s name, e.g.:
 
-+ Regexp can be used for e.g. paginated content:
+   ```ruby
+   class Shoe < ActiveRecord::Base
+     belongs_to :user
+     manage_cache_for users_shoes: { instance_eval: { user: "user.id", shoe: :id }, if_changed: [:color] }
+   end
+   
+   class User < ActiveRecord::Base
+     has_many :shoes
+     manage_cache_for users_shoes: { instance_eval: { user: :id }, regexp: {shoe: "\\d+" }, if_changed: [:name] }
+   end
+   ```
+
+   ```erb
+   <% @user.shoes.each do |shoe| %>
+    <% cache shoe.cache_key_for(:users_shoes), skip_digest: true do %>
+     <%= "#{@user.name} has #{shoe.name}: #{shoe.color}" %>
+     <% end %>
+   <% end %>
+   ```
+   So, when the user updates his name all shoes\` caches will be deleted. Whereas when a shoe changes it\`s color only this shoes\` cache will be deleted.
+   
++ Regexp usage for e.g. paginated content:
 
    ```
    class User < ActiveRecord::Base
