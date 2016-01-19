@@ -13,7 +13,7 @@ NOTE: regexp was buggy with redis! Use version 0.0.5!
 Add the gem to your Gemfile:
 
 ```ruby
-gem 'manage_cache', '~> 0.0.4'
+gem 'manage_cache', '~> 0.0.5'
 ```
 
 In your ActiveRecord model, write e.g.:
