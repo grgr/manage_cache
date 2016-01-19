@@ -6,7 +6,7 @@ This is especially usefull for all cache stores other than memcached, but can he
 
 Another advantage is that it is not necessary to touch relations. Just define the cache_key right.
 
-NOTE: Version 0.0.4 fixes regexp cache deletion with redis.
+NOTE: regexp was buggy with redis! Use version 0.0.5!
 
 # Usage
 
@@ -93,7 +93,7 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
      manage_cache_for users_index: { regexp: { page: "\\d+" } }
    end
    ```
-   NOTE: The quoted regexp part: `"\\d+"` instead of `"\d+"`!!
+   NOTE: The quoted regexp part: `"\\d+"` instead of `"\d+"` necessary for FileStore!! Using RedisStore all the expressions will be replaced with `*`.  
 
    This would delete all pages cached with the following:
 
@@ -106,5 +106,6 @@ With low-level caching (e.g. `Rails.cache.fetch(@some_class.cache_key_for(:some_
    NOTES:
    +  use `try(:cache_key_for, :...)` on collections. They might be empty!
    + use `page: params[:page] || 1` because the first page is normally called without params[:page] - this content would    never be deleted!
-   + memcached does not implent `delete_matched` therefore regexp cannot be used with memcached. Use redis instead: [redis-rails](https://github.com/redis-store/redis-rails)
+   + memcached does not implent `delete_matched` therefore regexp cannot be used with memcached. 
+   + If cache_store is redis_store patterns like `\d+` will be replaced with `*`. Note as well that Redis has performance problems regexp-ing keys [redis-store/issues/186](https://github.com/redis-store/redis-store/issues/186).
 
